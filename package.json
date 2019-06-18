@@ -4,7 +4,7 @@
   "description": "React Nodejs TradingView Chart library project for Cointracking",
   "main": "src/server/index.js",
   "scripts": {
-    "heroku-prebuild": "npm install --dev",
+    "heroku-postbuild": "webpack -p",
     "build": "webpack --mode production",
     "start": "npm run build && node src/server/index.js",
     "client": "webpack-dev-server --mode development --devtool inline-source-map --hot",
