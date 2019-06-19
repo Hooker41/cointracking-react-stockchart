@@ -38,12 +38,12 @@ import {
 import TDSequential from "tdsequential";
 
 const bbStroke = {
-	top: "#964B00",
+	top: "#000000",
 	middle: "#000000",
-	bottom: "#964B00",
+	bottom: "#000000",
 };
 
-const bbFill = "#4682B4";
+const bbFill = "#ffffff";
 
 class BalanceChart extends React.Component {
 	render() {
@@ -81,16 +81,16 @@ class BalanceChart extends React.Component {
 		// };
 		const buycountdown = {
 			...defaultAnnotationProps,
-			fill: "#006517",
+			fill: "#E20000",
 			text: (d) => d.buyCoundownIndex,
-			y: ({ yScale, datum }) => yScale(datum.high) - 20,
+			y: ({ yScale, datum }) => yScale(datum.low) + 20,
 			tooltip: "buyCountdownIndex",
 		};
 		const sellcountdown = {
 			...defaultAnnotationProps,
-			fill: "#E20000",
+			fill: "#006517",
 			text: (d) => d.sellCoundownIndex,
-			y: ({ yScale, datum }) => yScale(datum.low) + 20,
+			y: ({ yScale, datum }) => yScale(datum.high) - 20,
 			tooltip: "sellCountdownIndex",
 		};
 		const bb = bollingerBand()
@@ -150,13 +150,13 @@ class BalanceChart extends React.Component {
 					<LineSeries
 						yAccessor={d => d.close}
 						interpolation={interpolation}
-						stroke="#ff7f0e"
-						fill="#ff7f0e"
+						stroke="#0000ff"
 						opacity="0"
 					/>
 					<BollingerBandTooltip
 						yAccessor={d => d.bb}
-						options={bb.options()} />
+						options={bb.options()}
+						/>
 
 					{/* <Annotate with={SvgPathAnnotation} when={d => d.buySetupPerfection === true}
 						usingProps={buySetupPerfection} />
