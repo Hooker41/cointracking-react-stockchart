@@ -8,8 +8,8 @@ const app = express();
 app.use(express.static('dist'));
 
 app.get('/api/getHistoricalSummary', async (req, res) => {
-  const result = await getHistoricalSummary();
-  console.log(JSON.stringify(result));
+  var type = req.query.type;
+  const result = await getHistoricalSummary(type);
   res.send({result});
 });
 

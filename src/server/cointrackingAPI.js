@@ -9,8 +9,10 @@ const secret = '2df4ff4fbe03a12baf1157e58a0f88952deec376ba21601c'; // YOUR API S
 
 const url = "https://cointracking.info/api/v1/";
 
-const getHistoricalSummary = async () => {
-  var params={};
+const getHistoricalSummary = async (type) => {
+  var params={
+    'btc': type
+  };
   var res = await coinTracking('getHistoricalSummary', params);
   return res;
 }
