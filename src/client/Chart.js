@@ -51,39 +51,39 @@ class BalanceChart extends React.Component {
 			fontFamily: "Glyphicons Halflings",
 			fontSize: 14,
 		};
-		const buySetupPerfection = {
-			...defaultAnnotationProps,
-			y: ({ yScale, datum }) => yScale(datum.low) + 30,
-			fill: "#006517",
-			path: buyPath,
-			tooltip: "buySetupPerfection",
-		};
-		const sellSetupPerfection = {
-			...defaultAnnotationProps,
-			y: ({ yScale, datum }) => yScale(datum.high) - 30,
-			fill: "#FF0000",
-			path: sellPath,
-			tooltip: "sellSetupPerfection",
-		};
-		const buysetup = {
-			...defaultAnnotationProps,
-			fill: "#006517",
-			text: (d) => d.buySetupIndex,
-			y: ({ yScale, datum }) => yScale(datum.high) - 20,
-			tooltip: "buySetupIndex",
-		};
-		const sellsetup = {
-			...defaultAnnotationProps,
-			fill: "#E20000",
-			text: (d) => d.sellSetupIndex,
-			y: ({ yScale, datum }) => yScale(datum.high) - 20,
-			tooltip: "sellSetupIndex",
-		};
+		// const buySetupPerfection = {
+		// 	...defaultAnnotationProps,
+		// 	y: ({ yScale, datum }) => yScale(datum.low) + 30,
+		// 	fill: "#006517",
+		// 	path: buyPath,
+		// 	tooltip: "buySetupPerfection",
+		// };
+		// const sellSetupPerfection = {
+		// 	...defaultAnnotationProps,
+		// 	y: ({ yScale, datum }) => yScale(datum.high) - 30,
+		// 	fill: "#FF0000",
+		// 	path: sellPath,
+		// 	tooltip: "sellSetupPerfection",
+		// };
+		// const buysetup = {
+		// 	...defaultAnnotationProps,
+		// 	fill: "#006517",
+		// 	text: (d) => d.buySetupIndex,
+		// 	y: ({ yScale, datum }) => yScale(datum.high) - 20,
+		// 	tooltip: "buySetupIndex",
+		// };
+		// const sellsetup = {
+		// 	...defaultAnnotationProps,
+		// 	fill: "#E20000",
+		// 	text: (d) => d.sellSetupIndex,
+		// 	y: ({ yScale, datum }) => yScale(datum.high) - 20,
+		// 	tooltip: "sellSetupIndex",
+		// };
 		const buycountdown = {
 			...defaultAnnotationProps,
 			fill: "#006517",
 			text: (d) => d.buyCoundownIndex,
-			y: ({ yScale, datum }) => yScale(datum.low) + 20,
+			y: ({ yScale, datum }) => yScale(datum.high) - 20,
 			tooltip: "buyCountdownIndex",
 		};
 		const sellcountdown = {
@@ -147,29 +147,28 @@ class BalanceChart extends React.Component {
 					<BollingerSeries yAccessor={d => d.bb}
 						stroke={bbStroke}
 						fill={bbFill} />
-					{/* <LineSeries
+					<LineSeries
 						yAccessor={d => d.close}
 						interpolation={interpolation}
 						stroke="#ff7f0e"
 						fill="#ff7f0e"
 						opacity="0"
-					/> */}
-					<CandlestickSeries />
+					/>
 					<BollingerBandTooltip
 						yAccessor={d => d.bb}
 						options={bb.options()} />
 
-					<Annotate with={SvgPathAnnotation} when={d => d.buySetupPerfection === true}
+					{/* <Annotate with={SvgPathAnnotation} when={d => d.buySetupPerfection === true}
 						usingProps={buySetupPerfection} />
 					<Annotate with={SvgPathAnnotation} when={d => d.sellSetupPerfection === true}
-						usingProps={sellSetupPerfection} />
-					<Annotate with={LabelAnnotation} when={d => d.buySetupIndex > 0}
+						usingProps={sellSetupPerfection} /> */}
+					{/* <Annotate with={LabelAnnotation} when={d => d.buySetupIndex > 0}
 						usingProps={buysetup} />
 					<Annotate with={LabelAnnotation} when={d => d.sellSetupIndex > 0}
-						usingProps={sellsetup} />
-					<Annotate with={LabelAnnotation} when={d => d.buyCoundownIndex > 0}
+						usingProps={sellsetup} /> */}
+					<Annotate with={LabelAnnotation} when={d => d.buyCoundownIndex > 0 && d.buyCoundownIndex < 10}
 						usingProps={buycountdown} />
-					<Annotate with={LabelAnnotation} when={d => d.sellCoundownIndex > 0}
+					<Annotate with={LabelAnnotation} when={d => d.sellCoundownIndex > 0 && d.sellCoundownIndex < 10}
 						usingProps={sellcountdown} />
 				</Chart>
 				<CrossHairCursor />
