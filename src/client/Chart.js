@@ -35,8 +35,6 @@ import {
 	LabelAnnotation
 } from "react-stockcharts/lib/annotation";
 
-import TDSequential from "tdsequential";
-
 const bbStroke = {
 	top: "#000000",
 	middle: "#000000",
@@ -86,6 +84,31 @@ class BalanceChart extends React.Component {
 		}
 		return newResult;
 	}
+	calculateTDSeq = (data) => {
+		let TD = [];
+		let TS = [];
+		let TDUp = [];
+		let TDDn = [];
+		let TDAllowed = 0;
+		let TSAllowed = 0;
+		for( var i in data){
+			let close = data[i].close;
+			let close4 = data[i-4] ? data[i-4].close : 0;
+			let newTD = close > close4 ? TD[TD.length-1] ? TD[TD.length-1] + 1 : 1 : 0;
+			let newTS = close < close4 ? TS[TS.length-1] ? TS[TS.length-1] + 1 : 1 : 0;
+			if (newTD == 1){
+				TDAllowed++;
+			}
+			if(newTS == 1){
+				TSAllowed++;
+			}
+			TD.push(newTD);
+			TS.push(newTS);
+			data[i]['TD'] = TDAllowed > 2 ? newTD : 0;
+			data[i]['TS'] = TSAllowed > 2 ? newTS : 0;
+		}
+		return data;
+	}
 	render() {
 		const defaultAnnotationProps = {
 			fontFamily: "Glyphicons Halflings",
@@ -93,16 +116,16 @@ class BalanceChart extends React.Component {
 		};
 		const buycountdown = {
 			...defaultAnnotationProps,
-			fill: "#E20000",
-			text: (d) => d.buyCoundownIndex,
-			y: ({ yScale, datum }) => yScale(datum.low) + 20,
+			fill: "#006517",
+			text: (d) => d.TD,
+			y: ({ yScale, datum }) => yScale(datum.low) - 15,
 			tooltip: "buyCountdownIndex",
 		};
 		const sellcountdown = {
 			...defaultAnnotationProps,
-			fill: "#006517",
-			text: (d) => d.sellCoundownIndex,
-			y: ({ yScale, datum }) => yScale(datum.high) - 20,
+			fill: "#E20000",
+			text: (d) => d.TS,
+			y: ({ yScale, datum }) => yScale(datum.high) + 15,
 			tooltip: "sellCountdownIndex",
 		};
 		const bb = bollingerBand()
@@ -111,12 +134,7 @@ class BalanceChart extends React.Component {
 
 		const { data: initialData, width, ratio, interpolation } = this.props;
 		var newTFDate = this.convertTimeFrame();
-		var result = TDSequential(newTFDate);
-		var mergedData = newTFDate.map((item, idx)=>{
-			let ele = result[idx];
-			let newItem = {...item, ...ele};
-			return newItem;
-		});
+		let mergedData = this.calculateTDSeq(newTFDate);
 		const calculatedData = bb(mergedData);
 		const xScaleProvider = discontinuousTimeScaleProvider
 			.inputDateAccessor(d => d.date);
@@ -175,9 +193,9 @@ class BalanceChart extends React.Component {
 								options={bb.options()}
 								origin={[0, 20]}
 								/>
-							<Annotate with={LabelAnnotation} when={d => d.buyCoundownIndex > 0 && d.buyCoundownIndex < 10}
+							<Annotate with={LabelAnnotation} when={d => d.TD > 0 && d.TD < 10}
 								usingProps={buycountdown} />
-							<Annotate with={LabelAnnotation} when={d => d.sellCoundownIndex > 0 && d.sellCoundownIndex < 10}
+							<Annotate with={LabelAnnotation} when={d => d.TS > 0 && d.TS < 10}
 								usingProps={sellcountdown} />
 						</Fragment>:""
 					}

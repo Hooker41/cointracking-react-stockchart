@@ -26,8 +26,7 @@
     "react": "^16.5.2",
     "react-bootstrap": "^1.0.0-beta.9",
     "react-dom": "^16.5.2",
-    "react-stockcharts": "^0.7.8",
-    "tdsequential": "^1.0.14"
+    "react-stockcharts": "^0.7.8"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
