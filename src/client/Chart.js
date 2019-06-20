@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, {Fragment} from "react";
 import PropTypes from "prop-types";
 
 import { format } from "d3-format";
@@ -22,7 +22,7 @@ import {
 } from "react-stockcharts/lib/coordinates";
 
 import { discontinuousTimeScaleProvider } from "react-stockcharts/lib/scale";
-import { OHLCTooltip, MovingAverageTooltip, BollingerBandTooltip } from "react-stockcharts/lib/tooltip";
+import { OHLCTooltip, BollingerBandTooltip } from "react-stockcharts/lib/tooltip";
 import { bollingerBand } from "react-stockcharts/lib/indicator";
 import { fitWidth } from "react-stockcharts/lib/helper";
 import { last } from "react-stockcharts/lib/utils";
@@ -46,39 +46,51 @@ const bbStroke = {
 const bbFill = "#ffffff";
 
 class BalanceChart extends React.Component {
+	calcNewTF = (subResult) => {
+		let date = subResult[0]['date'];
+		let open = subResult[0]['open'];
+		let high = subResult[0]['high'];
+		let low = subResult[0]['low'];
+		let close = subResult[subResult.length-1]['close'];
+		let volume = 0;
+		for ( let k in subResult){
+			let bar = subResult[k];
+			volume += bar['volume'];
+			high = Math.max(high, bar['high']);
+			low = Math.min(low, bar['low']);
+		}
+		return {date, open, high, low, close, volume};
+	}
+
+	convertTimeFrame = () => {
+		const { data: result, timeframe } = this.props;
+		let newResult = [];
+		// covert timeframe.
+		const minInterval = timeframe * 24 * 60 * 60 * 1000;
+		let subResult = [];
+		let nextStop = new Date(result[0]['date']).getTime() + minInterval;
+		for (let i  = 0; i < result.length; i++){
+			let bar = result[i];
+			if (new Date(bar['date']).getTime() < nextStop){
+				subResult.push(bar);
+			} else {
+				if(subResult.length > 0){
+					newResult.push(this.calcNewTF(subResult));
+				}
+				subResult = [bar];
+				nextStop = new Date(result[i]['date']).getTime() + minInterval;
+			}
+		}
+		if(subResult.length > 0){
+		  	newResult.push(this.calcNewTF(subResult));
+		}
+		return newResult;
+	}
 	render() {
 		const defaultAnnotationProps = {
 			fontFamily: "Glyphicons Halflings",
 			fontSize: 14,
 		};
-		// const buySetupPerfection = {
-		// 	...defaultAnnotationProps,
-		// 	y: ({ yScale, datum }) => yScale(datum.low) + 30,
-		// 	fill: "#006517",
-		// 	path: buyPath,
-		// 	tooltip: "buySetupPerfection",
-		// };
-		// const sellSetupPerfection = {
-		// 	...defaultAnnotationProps,
-		// 	y: ({ yScale, datum }) => yScale(datum.high) - 30,
-		// 	fill: "#FF0000",
-		// 	path: sellPath,
-		// 	tooltip: "sellSetupPerfection",
-		// };
-		// const buysetup = {
-		// 	...defaultAnnotationProps,
-		// 	fill: "#006517",
-		// 	text: (d) => d.buySetupIndex,
-		// 	y: ({ yScale, datum }) => yScale(datum.high) - 20,
-		// 	tooltip: "buySetupIndex",
-		// };
-		// const sellsetup = {
-		// 	...defaultAnnotationProps,
-		// 	fill: "#E20000",
-		// 	text: (d) => d.sellSetupIndex,
-		// 	y: ({ yScale, datum }) => yScale(datum.high) - 20,
-		// 	tooltip: "sellSetupIndex",
-		// };
 		const buycountdown = {
 			...defaultAnnotationProps,
 			fill: "#E20000",
@@ -98,8 +110,9 @@ class BalanceChart extends React.Component {
 			.accessor(d => d.bb);
 
 		const { data: initialData, width, ratio, interpolation } = this.props;
-		var result = TDSequential(initialData);
-		var mergedData = initialData.map((item, idx)=>{
+		var newTFDate = this.convertTimeFrame();
+		var result = TDSequential(newTFDate);
+		var mergedData = newTFDate.map((item, idx)=>{
 			let ele = result[idx];
 			let newItem = {...item, ...ele};
 			return newItem;
@@ -144,32 +157,30 @@ class BalanceChart extends React.Component {
 						at="right"
 						orient="right"
 						displayFormat={format(".2f")} />
-					<BollingerSeries yAccessor={d => d.bb}
-						stroke={bbStroke}
-						fill={bbFill} />
 					<LineSeries
 						yAccessor={d => d.close}
 						interpolation={interpolation}
-						stroke="#0000ff"
-						opacity="0"
+						stroke="#87CEEB"
+						strokeWidth={2}
 					/>
-					<BollingerBandTooltip
-						yAccessor={d => d.bb}
-						options={bb.options()}
-						/>
-
-					{/* <Annotate with={SvgPathAnnotation} when={d => d.buySetupPerfection === true}
-						usingProps={buySetupPerfection} />
-					<Annotate with={SvgPathAnnotation} when={d => d.sellSetupPerfection === true}
-						usingProps={sellSetupPerfection} /> */}
-					{/* <Annotate with={LabelAnnotation} when={d => d.buySetupIndex > 0}
-						usingProps={buysetup} />
-					<Annotate with={LabelAnnotation} when={d => d.sellSetupIndex > 0}
-						usingProps={sellsetup} /> */}
-					<Annotate with={LabelAnnotation} when={d => d.buyCoundownIndex > 0 && d.buyCoundownIndex < 10}
-						usingProps={buycountdown} />
-					<Annotate with={LabelAnnotation} when={d => d.sellCoundownIndex > 0 && d.sellCoundownIndex < 10}
-						usingProps={sellcountdown} />
+					<OHLCTooltip/>
+					{
+						this.props.visible ?
+						<Fragment>
+							<BollingerSeries yAccessor={d => d.bb}
+								stroke={bbStroke}
+								fill={bbFill} />
+							<BollingerBandTooltip
+								yAccessor={d => d.bb}
+								options={bb.options()}
+								origin={[0, 20]}
+								/>
+							<Annotate with={LabelAnnotation} when={d => d.buyCoundownIndex > 0 && d.buyCoundownIndex < 10}
+								usingProps={buycountdown} />
+							<Annotate with={LabelAnnotation} when={d => d.sellCoundownIndex > 0 && d.sellCoundownIndex < 10}
+								usingProps={sellcountdown} />
+						</Fragment>:""
+					}
 				</Chart>
 				<CrossHairCursor />
 			</ChartCanvas>
@@ -181,6 +192,8 @@ BalanceChart.propTypes = {
 	data: PropTypes.array.isRequired,
 	width: PropTypes.number.isRequired,
 	ratio: PropTypes.number.isRequired,
+	visible: PropTypes.bool.isRequired,
+	timeframe: PropTypes.number.isRequired,
 };
 BalanceChart = fitWidth(BalanceChart);
 
